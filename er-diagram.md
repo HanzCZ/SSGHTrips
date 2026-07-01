@@ -10,7 +10,7 @@ erDiagram
         string email
         date birth_date
         boolean is_adult
-        enum system_role "teacher | management | student | parent | admin"
+        string system_role "teacher,management,student,parent,admin"
     }
 
     CLASS {
@@ -35,8 +35,8 @@ erDiagram
         int id PK
         string name
         text description
-        enum type "class | school"
-        enum status "draft | pending_approval | approved | rejected | returned | published | archived"
+        string type "class,school"
+        string status "draft,pending_approval,approved,rejected,returned,published,archived"
         int capacity
         decimal student_budget
         decimal school_budget
@@ -70,7 +70,7 @@ erDiagram
         int id PK
         int trip_id FK
         int approver_user_id FK
-        enum action "approved | rejected | returned_for_revision"
+        string action "approved,rejected,returned_for_revision"
         text note
         timestamp created_at
     }
@@ -80,7 +80,7 @@ erDiagram
         int trip_id FK
         int student_profile_id FK
         int registered_by_user_id FK
-        enum status "pending | accepted | rejected"
+        string status "pending,accepted,rejected"
         text rejection_note
         timestamp registered_at
         timestamp reviewed_at
@@ -95,29 +95,29 @@ erDiagram
 
     %% Relationships
 
-    USER ||--o{ STUDENT_PROFILE : "má profil žáka"
-    USER ||--o{ PARENT_STUDENT : "je rodič"
-    STUDENT_PROFILE ||--o{ PARENT_STUDENT : "má rodiče"
-    CLASS ||--o{ STUDENT_PROFILE : "obsahuje žáky"
-    USER ||--o{ CLASS : "je třídní učitel"
+    USER ||--o{ STUDENT_PROFILE : "has student profile"
+    USER ||--o{ PARENT_STUDENT : "is parent"
+    STUDENT_PROFILE ||--o{ PARENT_STUDENT : "has parent"
+    CLASS ||--o{ STUDENT_PROFILE : "contains students"
+    USER ||--o{ CLASS : "is homeroom teacher"
 
-    USER ||--o{ TRIP : "vytváří (owner)"
-    USER ||--o{ TRIP : "vede (leader)"
-    TRIP ||--o{ TRIP_CLASS : "platí pro třídy"
-    CLASS ||--o{ TRIP_CLASS : ""
-    TRIP ||--o{ TRIP_ELIGIBLE_GRADE : "otevřen pro ročníky"
-    TRIP ||--o{ TRIP_STAFF : "má zaměstnance"
-    USER ||--o{ TRIP_STAFF : "účastní se jako zaměstnanec"
+    USER ||--o{ TRIP : "creates (owner)"
+    USER ||--o{ TRIP : "leads (leader)"
+    TRIP ||--o{ TRIP_CLASS : "assigned to class"
+    CLASS ||--o{ TRIP_CLASS : "included in trip"
+    TRIP ||--o{ TRIP_ELIGIBLE_GRADE : "open to grade"
+    TRIP ||--o{ TRIP_STAFF : "has staff"
+    USER ||--o{ TRIP_STAFF : "participates as staff"
 
-    TRIP ||--o{ APPROVAL_RECORD : "má záznamy schvalování"
-    USER ||--o{ APPROVAL_RECORD : "schvaluje"
+    TRIP ||--o{ APPROVAL_RECORD : "has approval records"
+    USER ||--o{ APPROVAL_RECORD : "approves"
 
-    TRIP ||--o{ TRIP_REGISTRATION : "má přihlášky"
-    STUDENT_PROFILE ||--o{ TRIP_REGISTRATION : "je přihlášen"
-    USER ||--o{ TRIP_REGISTRATION : "přihlašuje (žák nebo rodič)"
+    TRIP ||--o{ TRIP_REGISTRATION : "has registrations"
+    STUDENT_PROFILE ||--o{ TRIP_REGISTRATION : "is registered"
+    USER ||--o{ TRIP_REGISTRATION : "registers"
 
-    TRIP ||--o{ NOTIFICATION_SUBSCRIPTION : "má odběratele notifikací"
-    USER ||--o{ NOTIFICATION_SUBSCRIPTION : "odebírá notifikace"
+    TRIP ||--o{ NOTIFICATION_SUBSCRIPTION : "has subscribers"
+    USER ||--o{ NOTIFICATION_SUBSCRIPTION : "subscribes"
 ```
 
 ## Klíčové poznámky k datovému modelu
