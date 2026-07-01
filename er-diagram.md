@@ -3,106 +3,14 @@
 ```mermaid
 erDiagram
 
-    USER {
-        int id
-        string first_name
-        string last_name
-        string email
-        date birth_date
-        boolean is_adult
-        string system_role
-    }
-
-    CLASS {
-        int id
-        string name
-        int grade_year
-        int homeroom_teacher_id
-    }
-
-    STUDENT_PROFILE {
-        int id
-        int user_id
-        int class_id
-    }
-
-    PARENT_STUDENT {
-        int parent_user_id
-        int student_profile_id
-    }
-
-    TRIP {
-        int id
-        string name
-        string description
-        string type
-        string status
-        int capacity
-        decimal student_budget
-        decimal school_budget
-        date start_date
-        date end_date
-        date registration_deadline
-        int created_by
-        int leader_user_id
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    TRIP_CLASS {
-        int trip_id
-        int class_id
-    }
-
-    TRIP_ELIGIBLE_GRADE {
-        int trip_id
-        int grade_year
-    }
-
-    TRIP_STAFF {
-        int id
-        int trip_id
-        int user_id
-        string role_label
-    }
-
-    APPROVAL_RECORD {
-        int id
-        int trip_id
-        int approver_user_id
-        string action
-        string note
-        timestamp created_at
-    }
-
-    TRIP_REGISTRATION {
-        int id
-        int trip_id
-        int student_profile_id
-        int registered_by_user_id
-        string status
-        string rejection_note
-        timestamp registered_at
-        timestamp reviewed_at
-    }
-
-    NOTIFICATION_SUBSCRIPTION {
-        int id
-        int trip_id
-        int user_id
-        timestamp subscribed_at
-    }
-
-    %% Relationships
-
     USER ||--o{ STUDENT_PROFILE : "has student profile"
     USER ||--o{ PARENT_STUDENT : "is parent"
     STUDENT_PROFILE ||--o{ PARENT_STUDENT : "has parent"
     CLASS ||--o{ STUDENT_PROFILE : "contains students"
     USER ||--o{ CLASS : "is homeroom teacher"
 
-    USER ||--o{ TRIP : "creates (owner)"
-    USER ||--o{ TRIP : "leads (leader)"
+    USER ||--o{ TRIP : "creates as owner"
+    USER ||--o{ TRIP : "leads"
     TRIP ||--o{ TRIP_CLASS : "assigned to class"
     CLASS ||--o{ TRIP_CLASS : "included in trip"
     TRIP ||--o{ TRIP_ELIGIBLE_GRADE : "open to grade"
@@ -119,6 +27,111 @@ erDiagram
     TRIP ||--o{ NOTIFICATION_SUBSCRIPTION : "has subscribers"
     USER ||--o{ NOTIFICATION_SUBSCRIPTION : "subscribes"
 ```
+
+## Atributy entit
+
+### USER
+| Atribut | Typ | Popis |
+|---------|-----|-------|
+| id | int PK | |
+| first_name | string | |
+| last_name | string | |
+| email | string | |
+| birth_date | date | Pro výpočet zletilosti |
+| is_adult | boolean | Vypočítáno z birth_date |
+| system_role | enum | `teacher`, `management`, `student`, `parent`, `admin` |
+
+### CLASS
+| Atribut | Typ | Popis |
+|---------|-----|-------|
+| id | int PK | |
+| name | string | Název třídy (např. 3.A) |
+| grade_year | int | Ročník (1–9) |
+| homeroom_teacher_id | int FK → USER | Třídní učitel |
+
+### STUDENT_PROFILE
+| Atribut | Typ | Popis |
+|---------|-----|-------|
+| id | int PK | |
+| user_id | int FK → USER | |
+| class_id | int FK → CLASS | |
+
+### PARENT_STUDENT
+| Atribut | Typ | Popis |
+|---------|-----|-------|
+| parent_user_id | int FK → USER | |
+| student_profile_id | int FK → STUDENT_PROFILE | |
+
+### TRIP
+| Atribut | Typ | Popis |
+|---------|-----|-------|
+| id | int PK | |
+| name | string | |
+| description | text | |
+| type | enum | `class`, `school` |
+| status | enum | `draft`, `pending_approval`, `approved`, `rejected`, `returned`, `published`, `archived` |
+| capacity | int | Max počet žáků |
+| student_budget | decimal | Co zaplatí žák |
+| school_budget | decimal | Příspěvek školy |
+| start_date | date | |
+| end_date | date | |
+| registration_deadline | date | Konec přihlášek |
+| created_by | int FK → USER | Owner výletu |
+| leader_user_id | int FK → USER | Vedoucí výletu |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+### TRIP_CLASS
+| Atribut | Typ | Popis |
+|---------|-----|-------|
+| trip_id | int FK → TRIP | |
+| class_id | int FK → CLASS | Pouze pro `type = class` |
+
+### TRIP_ELIGIBLE_GRADE
+| Atribut | Typ | Popis |
+|---------|-----|-------|
+| trip_id | int FK → TRIP | |
+| grade_year | int | Povolený ročník (pro `type = school`) |
+
+### TRIP_STAFF
+| Atribut | Typ | Popis |
+|---------|-----|-------|
+| id | int PK | |
+| trip_id | int FK → TRIP | |
+| user_id | int FK → USER | |
+| role_label | string | Např. "Zdravotník", "Průvodce" |
+
+### APPROVAL_RECORD
+| Atribut | Typ | Popis |
+|---------|-----|-------|
+| id | int PK | |
+| trip_id | int FK → TRIP | |
+| approver_user_id | int FK → USER | |
+| action | enum | `approved`, `rejected`, `returned_for_revision` |
+| note | text | Povinné při rejected a returned |
+| created_at | timestamp | |
+
+### TRIP_REGISTRATION
+| Atribut | Typ | Popis |
+|---------|-----|-------|
+| id | int PK | |
+| trip_id | int FK → TRIP | |
+| student_profile_id | int FK → STUDENT_PROFILE | |
+| registered_by_user_id | int FK → USER | Žák nebo rodič |
+| status | enum | `pending`, `accepted`, `rejected` |
+| rejection_note | text | Povinné při rejected |
+| registered_at | timestamp | |
+| reviewed_at | timestamp | |
+
+### NOTIFICATION_SUBSCRIPTION
+| Atribut | Typ | Popis |
+|---------|-----|-------|
+| id | int PK | |
+| trip_id | int FK → TRIP | |
+| user_id | int FK → USER | |
+| subscribed_at | timestamp | |
+
+---
 
 ## Klíčové poznámky k datovému modelu
 
