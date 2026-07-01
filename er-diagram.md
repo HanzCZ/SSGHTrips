@@ -9,7 +9,8 @@ erDiagram
     CLASS ||--o{ STUDENT_PROFILE : "contains students"
     USER ||--o{ CLASS : "is homeroom teacher"
 
-    USER ||--o{ TRIP : "creates as owner"
+    USER ||--o{ TRIP : "creates"
+    USER ||--o{ TRIP : "owns"
     USER ||--o{ TRIP : "leads"
     TRIP ||--o{ TRIP_CLASS : "assigned to class"
     CLASS ||--o{ TRIP_CLASS : "included in trip"
@@ -67,16 +68,20 @@ erDiagram
 |---------|-----|-------|
 | id | int PK | |
 | name | string | |
-| description | text | |
+| description | text | Popis výletu |
+| boarding_description | text | Popis k nástupu na výlet |
+| departure_description | text | Popis ukončení výletu |
 | type | enum | `class`, `school` |
 | status | enum | `draft`, `pending_approval`, `approved`, `rejected`, `returned`, `published`, `archived` |
 | capacity | int | Max počet žáků |
 | student_budget | decimal | Co zaplatí žák |
 | school_budget | decimal | Příspěvek školy |
-| start_date | date | |
-| end_date | date | |
-| registration_deadline | date | Konec přihlášek |
-| created_by | int FK → USER | Owner výletu |
+| payment_cash | boolean | `true` = hotově na místě, `false` = bankovní převod |
+| start_datetime | datetime | Začátek výletu |
+| end_datetime | datetime | Konec výletu |
+| registration_deadline | datetime | Konec přihlašování |
+| created_by | int FK → USER | Kdo záznam vytvořil (audit trail, nemění se) |
+| owner_user_id | int FK → USER | Aktuální owner výletu (lze změnit, výchozí = created_by) |
 | leader_user_id | int FK → USER | Vedoucí výletu |
 | created_at | timestamp | |
 | updated_at | timestamp | |
@@ -139,9 +144,18 @@ erDiagram
 - `system_role` určuje co uživatel v systému může dělat globálně
 - Jeden uživatel může mít roli `teacher` a zároveň mít dítě jako žáka (rodič) — to by se řešilo přes `PARENT_STUDENT` napojením i bez role `parent` nebo přes multi-role systém (rozhodnutí pro tým)
 
+### TRIP — Owner vs. Created by
+- `created_by` se nastaví při vytvoření a **nikdy se nemění** — slouží jako audit trail
+- `owner_user_id` se výchozně nastaví na `created_by`, ale lze ho změnit (např. výlet vytvořen za kolegu)
+- Oprávnění (editace, publikace, schvalování přihlášek) se váží na `owner_user_id`
+
 ### TRIP — typ a podmínky přístupu
 - `type = class` → přihlášení jen skrz `TRIP_CLASS` (konkrétní třídy)
 - `type = school` → přihlášení skrz `TRIP_ELIGIBLE_GRADE` (ročníky), nebo prázdné = všichni
+
+### TRIP — platba
+- `payment_cash = true` → žák platí hotově na místě
+- `payment_cash = false` → žák platí bankovním převodem (budoucí napojení na účetnictví)
 
 ### Přihlášení (`TRIP_REGISTRATION`)
 - `registered_by_user_id` = buď sám žák (zletilý), nebo rodič
