@@ -79,6 +79,7 @@ erDiagram
 | payment_cash | boolean | `true` = hotově na místě, `false` = bankovní převod |
 | start_datetime | datetime | Začátek výletu |
 | end_datetime | datetime | Konec výletu |
+| registration_start_datetime | datetime | Začátek přihlašování — `NULL` = hned po publikaci |
 | registration_deadline | datetime | Konec přihlašování |
 | created_by | int FK → USER | Kdo záznam vytvořil (audit trail, nemění se) |
 | owner_user_id | int FK → USER | Aktuální owner výletu (lze změnit, výchozí = created_by) |
@@ -156,6 +157,11 @@ erDiagram
 ### TRIP — platba
 - `payment_cash = true` → žák platí hotově na místě
 - `payment_cash = false` → žák platí bankovním převodem (budoucí napojení na účetnictví)
+
+### TRIP — okno přihlašování
+- `registration_start_datetime = NULL` → přihlašování začíná okamžitě po publikaci (owner to nemusí vyplňovat)
+- `registration_start_datetime` nastavené → přihlašování se otevře až v daný čas (výlet je mezitím viditelný, ale přihlásit se nelze)
+- `registration_deadline` — konec přihlašování, po deadline systém přihlášky odmítá
 
 ### Přihlášení (`TRIP_REGISTRATION`)
 - `registered_by_user_id` = buď sám žák (zletilý), nebo rodič
