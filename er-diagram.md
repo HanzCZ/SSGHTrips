@@ -15,6 +15,9 @@ erDiagram
     TRIP ||--o{ TRIP_CLASS : "assigned to class"
     CLASS ||--o{ TRIP_CLASS : "included in trip"
     TRIP ||--o{ TRIP_ELIGIBLE_GRADE : "open to grade"
+    TRIP ||--o{ TRIP_ELIGIBLE_FIELD_OF_STUDY : "open to field of study"
+    TRIP ||--o{ TRIP_ELIGIBLE_STUDY_FORM : "open to study form"
+    TRIP ||--o{ TRIP_REGISTRATION_CONDITION : "has registration conditions"
     TRIP ||--o{ TRIP_STAFF : "has staff"
     USER ||--o{ TRIP_STAFF : "participates as staff"
 
@@ -97,7 +100,28 @@ erDiagram
 | Atribut | Typ | Popis |
 |---------|-----|-------|
 | trip_id | int FK → TRIP | |
-| grade_year | int | Povolený ročník (pro `type = school`) |
+| grade_year | int | Povolený ročník — pouze pro `type = school` |
+
+### TRIP_ELIGIBLE_FIELD_OF_STUDY
+| Atribut | Typ | Popis |
+|---------|-----|-------|
+| trip_id | int FK → TRIP | |
+| field_of_study | string | Obor studia — pouze pro `type = school` |
+
+### TRIP_ELIGIBLE_STUDY_FORM
+| Atribut | Typ | Popis |
+|---------|-----|-------|
+| trip_id | int FK → TRIP | |
+| study_form | string | Forma studia (např. `denní`, `dálkové`) — pouze pro `type = school` |
+
+### TRIP_REGISTRATION_CONDITION
+| Atribut | Typ | Popis |
+|---------|-----|-------|
+| id | int PK | |
+| trip_id | int FK → TRIP | |
+| condition_type | enum | `max_absences`, `max_subject_absences`, `max_failing_grades` |
+| threshold | int | Maximální povolená hodnota |
+| subject_id | int FK → SUBJECT (nullable) | Vyplněno pouze pro `max_subject_absences` |
 
 ### TRIP_STAFF
 | Atribut | Typ | Popis |
@@ -151,8 +175,29 @@ erDiagram
 - Oprávnění (editace, publikace, schvalování přihlášek) se váží na `owner_user_id`
 
 ### TRIP — typ a podmínky přístupu
-- `type = class` → přihlášení jen skrz `TRIP_CLASS` (konkrétní třídy)
-- `type = school` → přihlášení skrz `TRIP_ELIGIBLE_GRADE` (ročníky), nebo prázdné = všichni
+
+**Podmínky viditelnosti** — určují, kdo výlet vůbec uvidí:
+
+| Podmínka | Platí pro typ | Tabulka |
+|----------|:-------------:|---------|
+| Konkrétní třídy | `class` | `TRIP_CLASS` |
+| Ročníky | `school` | `TRIP_ELIGIBLE_GRADE` |
+| Obor studia | `school` | `TRIP_ELIGIBLE_FIELD_OF_STUDY` |
+| Forma studia | `school` | `TRIP_ELIGIBLE_STUDY_FORM` |
+
+Prázdná junction tabulka = podmínka se neuplatňuje (otevřeno všem v dané kategorii).
+
+**Podmínky přihlášení** (`TRIP_REGISTRATION_CONDITION`) — platí pro oba typy, neovlivňují viditelnost:
+
+| condition_type | Popis | threshold |
+|----------------|-------|-----------|
+| `max_absences` | Max. celkové absence | počet hodin/dní |
+| `max_subject_absences` | Max. absence na konkrétním předmětu | počet hodin, vyžaduje `subject_id` |
+| `max_failing_grades` | Max. počet pětek v posledním čtvrtletním hodnocení | počet předmětů |
+
+Pokud žák podmínky přihlášení nesplňuje:
+- nemůže se přihlásit sám (systém to zablokuje)
+- owner ho může přihlásit ručně (override)
 
 ### TRIP — platba
 - `payment_cash = true` → žák platí hotově na místě
