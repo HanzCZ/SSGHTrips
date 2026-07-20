@@ -1,5 +1,5 @@
 > ⚠️ **Toto repo je archivované — obsah se přestěhoval.**
-> Aktuální verze žije v privátním repu [HanzCZ/ssgh-dokumentace](https://github.com/HanzCZ/ssgh-dokumentace), složka [`skolni-vylety/`](https://github.com/HanzCZ/ssgh-dokumentace/tree/main/skolni-vylety). Historie commitů byla při sloučení zachována.
+> Aktuální verze žije v privátním repu [HanzCZ/ssgh-dokumentace](https://github.com/HanzCZ/ssgh-dokumentace), složka [`skolni-akce/`](https://github.com/HanzCZ/ssgh-dokumentace/tree/main/skolni-akce). Historie commitů byla při sloučení zachována.
 
 # Systém školních výletů — Dokumentace diagramů
 
